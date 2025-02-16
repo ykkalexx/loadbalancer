@@ -43,7 +43,7 @@ func (lb *loadBalancer) AddServer(url string) {
 }
 
 // using a round-robin algorithm for nextServer which returns the next available server
-func (lb *loadBalancer) nextServer() *Server {
+func (lb *loadBalancer) NextServer() *Server {
 	lb.mux.Lock()
 	defer lb.mux.Unlock()
 
