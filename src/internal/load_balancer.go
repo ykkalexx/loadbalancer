@@ -43,3 +43,16 @@ func (lb *loadBalancer) AddServer(url string) {
 }
 
 // using a round-robin algorithm for nextServer which returns the next available server
+func (lb *loadBalancer) nextServer() *Server {
+	lb.mux.Lock()
+	defer lb.mux.Unlock()
+
+	// loopin through the servers to find a healthy one
+	for i := 0; i < len(lb.servers); i++ {
+		lb.current = (lb.current + 1) % len(lb.servers)
+		if lb.servers[lb.current].Alive {
+			return lb.servers[lb.current]
+		}
+	}
+	return nil
+}
