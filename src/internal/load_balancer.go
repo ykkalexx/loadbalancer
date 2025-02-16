@@ -1,12 +1,16 @@
 package loadbalancer
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 // represents a backend server
 type Server struct {
 	URL   string
 	Alive bool
 	mux   sync.RWMutex
+	LastChecked time.Time
 	FailCount int
 }
 
@@ -37,3 +41,5 @@ func (lb *loadBalancer) AddServer(url string) {
 	}
 	lb.servers = append(lb.servers, server)
 }
+
+// using a round-robin algorithm for nextServer which returns the next available server
