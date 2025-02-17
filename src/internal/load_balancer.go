@@ -56,3 +56,10 @@ func (lb *loadBalancer) NextServer() *Server {
 	}
 	return nil
 }
+
+func (lb *loadBalancer) GetServers() []*Server {
+	lb.mux.RLock()
+	defer lb.mux.RUnlock()
+
+	return lb.servers
+}

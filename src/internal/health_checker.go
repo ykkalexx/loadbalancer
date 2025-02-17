@@ -58,3 +58,16 @@ func (lb *loadBalancer) StartHealthCheck() {
         }
     }()
 }
+
+func (lb *loadBalancer) GetHealthyServerCount() int {
+	lb.mux.RLock()
+	defer lb.mux.RUnlock()
+
+	count := 0
+	for _, server := range lb.servers {
+		if server.Alive {
+			count++
+		}
+	}
+	return count
+}
