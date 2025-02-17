@@ -1,0 +1,26 @@
+{
+  "port": 8080,
+  "servers": [
+    {
+      "url": "http://localhost:5001",
+      "weight": 2
+    },
+    {
+      "url": "http://localhost:5002",
+      "weight": 1
+    },
+    {
+      "url": "http://localhost:5003",
+      "weight": 1
+    }
+  ],
+  "rate_limit": {
+    "requests_per_second": 100,
+    "burst_size": 20
+  },
+  "health_check": {
+    "interval": "20s",
+    "timeout": "5s",
+    "max_failures": 3
+  }
+}
