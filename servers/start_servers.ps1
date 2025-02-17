@@ -16,3 +16,17 @@ foreach ($port in $ports) {
     Write-Host "http://localhost:$port"
 }
 Write-Host "`nPress Ctrl+C in each window to stop the servers"
+
+#make multiple requests:
+for ($i = 1; $i -le 10; $i++) {
+    Write-Host "Request $i"
+    Invoke-WebRequest -Uri "http://localhost:8080" | Select-Object -ExpandProperty Content
+    Start-Sleep -Milliseconds 500
+}
+
+# Make requests every second for 30 seconds
+$start = Get-Date
+while ((Get-Date) -lt ($start.AddSeconds(30))) {
+    Invoke-WebRequest -Uri "http://localhost:8080" | Select-Object -ExpandProperty Content
+    Start-Sleep -Seconds 1
+}

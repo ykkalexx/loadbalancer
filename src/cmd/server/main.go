@@ -22,22 +22,25 @@ func main() {
 	lb.StartHealthCheck()
 
     // creating a proxy handler
-    handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        server := lb.NextServer() // We'll implement this next
-        if server == nil {
-            http.Error(w, "No available servers", http.StatusServiceUnavailable)
-            return
-        }
-
-        targetURL, err := url.Parse(server.URL)
-        if err != nil {
-            http.Error(w, "Invalid backend server URL", http.StatusInternalServerError)
-            return
-        }
-
-        proxy := httputil.NewSingleHostReverseProxy(targetURL)
-        proxy.ServeHTTP(w, r)
-    })
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		server := lb.NextServer()
+		if server == nil {
+			log.Printf("No available servers")
+			http.Error(w, "No available servers", http.StatusServiceUnavailable)
+			return
+		}
+	
+		log.Printf("Routing request to: %s", server.URL)
+		targetURL, err := url.Parse(server.URL)
+		if err != nil {
+			log.Printf("Error parsing URL: %v", err)
+			http.Error(w, "Invalid backend server URL", http.StatusInternalServerError)
+			return
+		}
+	
+		proxy := httputil.NewSingleHostReverseProxy(targetURL)
+		proxy.ServeHTTP(w, r)
+	})
 
 	// starting the load balancer
 	log.Printf("Load balancer started at :8080")
