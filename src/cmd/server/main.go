@@ -9,23 +9,43 @@ import (
 	"time"
 
 	loadbalancer "github.com/ykkalexx/load-balancer/internal"
+	"github.com/ykkalexx/load-balancer/internal/config"
+	"github.com/ykkalexx/load-balancer/internal/ratelimiter"
 )
 
 func main() {
+	config, err := config.LoadConfig("C:\\Projects\\DistributedLoadBalancer\\config.json")
+	if err != nil {
+		log.Fatal("Failed to load config: ", err)
+	}
+
+
 	// init load balancer
-	lb := loadbalancer.NewLoadBalancer()
-	metrics := loadbalancer.NewMetrics()
+    lb := loadbalancer.NewLoadBalancer()
+    metrics := loadbalancer.NewMetrics()
+    ratelimiter := ratelimiter.NewRateLimiter(
+        config.RateLimit.RequestsPerSecond,
+        time.Second,
+    )
 
 	// adding servers 
-	lb.AddServer("http://localhost:5001")
-	lb.AddServer("http://localhost:5002")
-	lb.AddServer("http://localhost:5003")
+    for _, server := range config.Servers {
+        lb.AddServerWithWeight(server.URL, server.Weight)
+    }
+
 
 	// start health checks on the servers
 	lb.StartHealthCheck()
 
     // creating a proxy handler
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// rate limiter
+		if !ratelimiter.Allow(r.RemoteAddr) {
+            metrics.RecordRequest(0, false)
+            http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
+            return
+        }
+
 		server := lb.NextServer()
 		start := time.Now()
 		if server == nil {

@@ -19,8 +19,8 @@
     "burst_size": 20
   },
   "health_check": {
-    "interval": "20s",
-    "timeout": "5s",
+    "interval_seconds": 20,
+    "timeout_seconds": 5,
     "max_failures": 3
   }
 }

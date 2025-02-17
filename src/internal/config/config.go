@@ -7,26 +7,26 @@ import (
 )
 
 type ServerConfig struct {
-	URL    string `json:"url"`
-	Weight int    `json:"weight"`
+    URL    string `json:"url"`
+    Weight int    `json:"weight"`
 }
 
 type RateLimitConfig struct {
-	RequestsPerSecond int `json:"requests_per_second"`
-	BurstSize         int `json:"burst_size"`
+    RequestsPerSecond int `json:"requests_per_second"`
+    BurstSize        int `json:"burst_size"`
 }
 
 type HealthCheckConfig struct {
-	Interval    time.Duration `json:"interval"`
-	Timeout     time.Duration `json:"timeout"`
-	MaxFailures int           `json:"max_failures"`
+    IntervalSeconds int `json:"interval_seconds"`
+    TimeoutSeconds  int `json:"timeout_seconds"`
+    MaxFailures     int `json:"max_failures"`
 }
 
 type Config struct {
-	Port        int               `json:"port"`
-	Servers     []ServerConfig    `json:"servers"`
-	RateLimit   RateLimitConfig   `json:"rate_limit"`
-	HealthCheck HealthCheckConfig `json:"health_check"`
+    Port        int              `json:"port"`
+    Servers     []ServerConfig   `json:"servers"`
+    RateLimit   RateLimitConfig  `json:"rate_limit"`
+    HealthCheck HealthCheckConfig `json:"health_check"`
 }
 
 func LoadConfig(filename string) (*Config, error) {
@@ -45,21 +45,25 @@ func LoadConfig(filename string) (*Config, error) {
     if config.Port == 0 {
         config.Port = 8080
     }
-    if config.RateLimit.RequestsPerSecond == 0 {
-        config.RateLimit.RequestsPerSecond = 100
+    if config.HealthCheck.IntervalSeconds == 0 {
+        config.HealthCheck.IntervalSeconds = 20
     }
-    if config.RateLimit.BurstSize == 0 {
-        config.RateLimit.BurstSize = 20
-    }
-    if config.HealthCheck.Interval == 0 {
-        config.HealthCheck.Interval = 20 * time.Second
-    }
-    if config.HealthCheck.Timeout == 0 {
-        config.HealthCheck.Timeout = 5 * time.Second
+    if config.HealthCheck.TimeoutSeconds == 0 {
+        config.HealthCheck.TimeoutSeconds = 5
     }
     if config.HealthCheck.MaxFailures == 0 {
         config.HealthCheck.MaxFailures = 3
     }
 
     return &config, nil
+}
+
+// GetHealthCheckDuration returns the health check interval as time.Duration
+func (c *Config) GetHealthCheckDuration() time.Duration {
+    return time.Duration(c.HealthCheck.IntervalSeconds) * time.Second
+}
+
+// GetTimeoutDuration returns the timeout as time.Duration
+func (c *Config) GetTimeoutDuration() time.Duration {
+    return time.Duration(c.HealthCheck.TimeoutSeconds) * time.Second
 }

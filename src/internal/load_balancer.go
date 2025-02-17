@@ -42,6 +42,19 @@ func (lb *loadBalancer) AddServer(url string) {
 	lb.servers = append(lb.servers, server)
 }
 
+func (lb *loadBalancer) AddServerWithWeight(url string, weight int) {
+	lb.mux.Lock()
+	defer lb.mux.Unlock()
+
+	for i := 0; i < weight; i++ {
+		server := &Server{
+			URL: url,
+			Alive: true,
+		}
+		lb.servers = append(lb.servers, server)
+	}
+}
+
 // using a round-robin algorithm for nextServer which returns the next available server
 func (lb *loadBalancer) NextServer() *Server {
 	lb.mux.Lock()
