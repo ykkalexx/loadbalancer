@@ -114,6 +114,22 @@ func main() {
     // the main handler
     mux.Handle("/", proxyHandler)
 
+    mux.HandleFunc("/cluster/join", func(w http.ResponseWriter, r *http.Request) {
+        if r.Method != http.MethodPost {
+            http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+            return
+        }
+        // Handle node join
+    })
+
+    mux.HandleFunc("/cluster/heartbeat", func(w http.ResponseWriter, r *http.Request) {
+        if r.Method != http.MethodPost {
+            http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+            return
+        }
+        // Handle heartbeat
+    })
+
     // starting the load balancer
     log.Printf("Load balancer started at :8080")
     if err := http.ListenAndServe(":8080", mux); err != nil {
