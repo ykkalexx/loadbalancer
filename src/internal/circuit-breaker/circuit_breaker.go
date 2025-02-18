@@ -49,3 +49,26 @@ func (cb *CircuitBreaker) IsAllowed() bool {
         return false
     }
 }
+
+func (cb *CircuitBreaker) RecordFailure() {
+    cb.mu.Lock()
+    defer cb.mu.Unlock()
+
+    cb.failures++
+    cb.lastFailure = time.Now()
+
+    if cb.failures >= cb.threshold {
+        cb.state = StateOpen
+        cb.failures = 0
+    }
+}
+
+func (cb *CircuitBreaker) RecordSuccess() {
+    cb.mu.Lock()
+    defer cb.mu.Unlock()
+
+    if cb.state == StateHalfOpen {
+        cb.state = StateClosed
+        cb.failures = 0
+    }
+}
