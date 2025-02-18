@@ -1,0 +1,36 @@
+{
+    "port":  8080,
+    "cluster":  {
+                    "enabled":  true,
+                    "node_id":  "node1",
+                    "peers":  [
+                                  "http://localhost:8081",
+                                  "http://localhost:8082"
+                              ],
+                    "heartbeat_interval":  5,
+                    "election_timeout":  15
+                },
+    "servers":  [
+                    {
+                        "url":  "http://localhost:5001",
+                        "weight":  2
+                    },
+                    {
+                        "url":  "http://localhost:5002",
+                        "weight":  1
+                    },
+                    {
+                        "url":  "http://localhost:5003",
+                        "weight":  1
+                    }
+                ],
+    "rate_limit":  {
+                       "requests_per_second":  100,
+                       "burst_size":  20
+                   },
+    "health_check":  {
+                         "interval_seconds":  20,
+                         "timeout_seconds":  5,
+                         "max_failures":  3
+                     }
+}

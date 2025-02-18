@@ -7,17 +7,20 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"time"
 
 	loadbalancer "github.com/ykkalexx/load-balancer/internal"
 	circuitbreaker "github.com/ykkalexx/load-balancer/internal/circuit-breaker"
+	"github.com/ykkalexx/load-balancer/internal/cluster"
 	"github.com/ykkalexx/load-balancer/internal/config"
 	"github.com/ykkalexx/load-balancer/internal/ratelimiter"
 	retry "github.com/ykkalexx/load-balancer/internal/retryMechanicsm"
 )
 
 func main() {
-    config, err := config.LoadConfig("C:/Projects/DistributedLoadBalancer/config.json")
+    configPath := os.Args[2] 
+    config, err := config.LoadConfig(configPath)
     if err != nil {
         log.Fatal("Failed to load config: ", err)
     }
@@ -31,6 +34,12 @@ func main() {
     )
     cb := circuitbreaker.NewCircuitBreaker(5, 10*time.Second)
     retryPolicy := retry.NewRetryPolicy()
+    clusterManager := cluster.NewClusterManager(
+        config.Cluster.NodeID,
+        config.Cluster.IsPrimary,
+        config.Cluster.PeerNodes,
+    )
+    clusterManager.Start()
 
     // adding servers 
     for _, server := range config.Servers {
@@ -52,6 +61,11 @@ func main() {
             "failed_requests":     metrics.FailedRequests,
             "server_count":        len(lb.GetServers()),
             "healthy_servers":     lb.GetHealthyServerCount(),
+            "cluster_info": map[string]interface{}{
+                "node_id":    config.Cluster.NodeID,
+                "is_primary": config.Cluster.IsPrimary,
+                "healthy_nodes": clusterManager.GetHealthyNodes(),
+            },
         }
         json.NewEncoder(w).Encode(data)
     })
@@ -114,25 +128,21 @@ func main() {
     // the main handler
     mux.Handle("/", proxyHandler)
 
-    mux.HandleFunc("/cluster/join", func(w http.ResponseWriter, r *http.Request) {
-        if r.Method != http.MethodPost {
-            http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-            return
-        }
-        // Handle node join
-    })
-
-    mux.HandleFunc("/cluster/heartbeat", func(w http.ResponseWriter, r *http.Request) {
-        if r.Method != http.MethodPost {
-            http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-            return
-        }
-        // Handle heartbeat
+    // Add a health check endpoint
+    mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Content-Type", "application/json")
+        json.NewEncoder(w).Encode(map[string]interface{}{
+            "status":    "healthy",
+            "node_id":   config.Cluster.NodeID,
+            "is_primary": config.Cluster.IsPrimary,
+            "timestamp": time.Now(),
+        })
     })
 
     // starting the load balancer
-    log.Printf("Load balancer started at :8080")
-    if err := http.ListenAndServe(":8080", mux); err != nil {
+    addr := fmt.Sprintf(":%d", config.Port)
+    log.Printf("Load balancer node %s starting at %s", config.Cluster.NodeID, addr)
+    if err := http.ListenAndServe(addr, mux); err != nil {
         log.Fatal(err)
     }
 }

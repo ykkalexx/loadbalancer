@@ -22,11 +22,21 @@ type HealthCheckConfig struct {
     MaxFailures     int `json:"max_failures"`
 }
 
+type ClusterConfig struct {
+    NodeID      string   `json:"node_id"`
+    Port        int      `json:"port"`
+    PeerNodes   []string `json:"peer_nodes"`
+    IsPrimary   bool     `json:"is_primary"`
+}
+
+
+
 type Config struct {
     Port        int              `json:"port"`
     Servers     []ServerConfig   `json:"servers"`
     RateLimit   RateLimitConfig  `json:"rate_limit"`
     HealthCheck HealthCheckConfig `json:"health_check"`
+    Cluster ClusterConfig `json:"cluster"`
 }
 
 func LoadConfig(filename string) (*Config, error) {

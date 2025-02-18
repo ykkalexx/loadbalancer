@@ -1,5 +1,12 @@
 {
   "port": 8080,
+  "cluster": {
+    "enabled": true,
+    "node_id": "node1",
+    "peers": ["http://localhost:8081", "http://localhost:8082"],
+    "heartbeat_interval": 5,
+    "election_timeout": 15
+  },
   "servers": [
     {
       "url": "http://localhost:5001",

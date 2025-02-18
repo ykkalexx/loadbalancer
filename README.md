@@ -42,6 +42,11 @@ The load balancer is configured via config.json. Example configuration:
 ```json
 {
   "port": 8080,
+  "cluster": {
+    "node_id": "node1",
+    "is_primary": true,
+    "peer_nodes": ["http://localhost:8081", "http://localhost:8082"]
+  },
   "servers": [
     {
       "url": "http://localhost:5001",
