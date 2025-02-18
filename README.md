@@ -4,12 +4,14 @@ A high-performance distributed load balancer written in Go that provides weighte
 
 ## Features
 
+- 🌐 Distributed cluster with primary-secondary architecture
 - ✨ Weighted round-robin load balancing
 - 🏥 Automatic health checking of backend servers
 - ⚡ Rate limiting with sliding window algorithm
 - 📊 Real-time metrics and monitoring
 - ⚖️ Configurable server weights
 - 🔄 Dynamic server pool management
+- 🔍 Cluster health monitoring
 
 ## Getting Started
 
@@ -86,20 +88,21 @@ Start the load balancer:
 
 ```powershell
 cd src
-go run cmd/server/main.go
+.\start_cluster.ps1
 ```
 
 Test the load balancer:
 
 ```powershell
-cd src/cmd/server
-.\metrics.ps1
+cd src
+.\test_system.ps1
 ```
 
 ### Architecture
 
 The load balancer consists of several key components:
 
+- **Cluster Manager**: Handles node coordination and health monitoring
 - **Load Balancer Core**: Manages server selection and request distribution
 - **Health Checker**: Monitors backend server health
 - **Rate Limiter**: Prevents server overload
